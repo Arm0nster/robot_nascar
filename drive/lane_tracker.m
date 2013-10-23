@@ -50,6 +50,7 @@ while 1
     c_set = [c_set1; c_set2];
 
     [y, theta] = getPose(c_set1, a1, b1, c_set2, a2, b2);
+    y = y/1000;
     
     pose = [y, theta];
     msg = Message('pose', pose);
@@ -176,7 +177,6 @@ end
 
 
 function bw = getBWImage(I)
-% you may only need to find vertical gradients
 
 thresh = 8;
 
