@@ -17,7 +17,6 @@ R = dlmread('rotation');
 T = dlmread('translation');
 
 p_ = transform(R, T, I, P);
-% [c_set, a, b] = pullLanes(p_);
 p_a = [0; 0];
 p_b = [-500; 500];
 
@@ -73,9 +72,6 @@ end
 
 function [y, theta] = getPose(X, Y1, Y2)
 
-% y1 = mean(Y1);
-% y2 = mean(Y2);
-% y = (y1+y2)/2;
 y = mean(Y2) - 500; 
 m = (Y2(2)-Y2(1))/(X(2)-X(1));
 theta = -1*atan(m);
@@ -212,13 +208,6 @@ p = C\y;
 
 a = p(1);
 b = p(2);
-end
-
-function data_ = clearPoints(data, a, b)
-% t = 100;
-% y = a*data(:,1) + b;
-% e = abs(data(:,2) - y)
-
 end
 
 function bw = getBWImage(I)

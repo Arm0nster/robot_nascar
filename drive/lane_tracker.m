@@ -20,17 +20,20 @@ R = dlmread('rotation');
 T = dlmread('translation');
 
 p_ = transform(R, T, I, P);
-[c_set1, a1, b1] = ransac(p_);
-p_2 = setdiff(p_, c_set1, 'rows');
-[c_set2, a2, b2] = ransac(p_2);
-c_set = [c_set1; c_set2];
+p_a = [0; 0];
+p_b = [-500; 500];
+
+X = [1000, 2000];
+Y1 = p_a(1)*X + p_b(1);
+Y2 = p_a(2)*X + p_b(2);
+
 
 subplot(2, 2, 1), h1 = imagesc(pic);axis image;
 subplot(2, 2, 2), h2 = imagesc(I); axis image;
 colormap gray;
 subplot(2, 2, 3), h3 = plot(p_(:,1), p_(:,2), '.');
 axis([0 3000, -1500 1500]);
-subplot(2, 2, 4), h4 = plot(c_set(:,1), c_set(:,2), '.');
+subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
 axis([0 3000, -1500 1500]);
 
 while 1
@@ -44,12 +47,16 @@ while 1
     I = getBWImage(I);
 
     p_ = transform(R, T, I, P);
-    [c_set1, a1, b1] = ransac(p_);
-    p_2 = setdiff(p_, c_set1, 'rows');
-    [c_set2, a2, b2] = ransac(p_2);
-    c_set = [c_set1; c_set2];
+    [c_set, a, b] = pullLanes(p_);
+    [a, b] = filter(a, b, p_a, p_b);
+    p_a = a;
+    p_b = b;
 
-    [y, theta] = getPose(c_set1, a1, b1, c_set2, a2, b2);
+    X = [1000, 2000];
+    Y1 = a(1)*X + b(1);
+    Y2 = a(2)*X + b(2);
+
+    [y, theta] = getPose(X, Y1, Y2);
     y = y/1000;
     
     pose = [y, theta];
@@ -61,7 +68,8 @@ while 1
     colormap gray;
     set(h3, 'XDATA', p_(:,1), 'YDATA', p_(:,2));
     axis([0 3000, -1500 1500]);
-    set(h4, 'XDATA', c_set(:,1), 'YDATA', c_set(:,2));
+    cla(h4);
+    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2);
     axis([0 3000, -1500 1500]);
     drawnow;
 end
@@ -70,23 +78,11 @@ mxNiDeleteContext(KinectHandles);
 
 end
 
-function [y, theta] = getPose(set1, a1, b1, set2, a2, b2)
-y1 = a1*set1(:,1) + b1;
-y2 = a2*set2(:,1) + b2;
+function [y, theta] = getPose(X, Y1, Y2)
 
-y1_bar = mean(y1);
-y2_bar = mean(y2);
-
-y = (y1_bar + y2_bar)/2;
-
-theta = 0;
-if (y1_bar > 0)
-    theta = atan(a1);
-else
-    if(y2_bar > 0)
-        theta = atan(a2);
-    end
-end
+y = mean(Y2) - 500; 
+m = (Y2(2)-Y2(1))/(X(2)-X(1));
+theta = -1*atan(m);
 
 end
 
@@ -120,18 +116,32 @@ p = ps_;
 
 end
 
-function [c_set, a, b] = ransac(data)
-% TODO:
-% save largest potential lines
-% pick largest
-% find dot product of largest and the next largest st. dp = 0
+function [a, b] = filter(a, b, p_a, p_b)
+d_a = abs(p_a - a);
+d_b = abs(p_b - b);
 
+if d_a > pi/20
+    a = p_a;
+else
+    a = a;
+end
+
+if d_b > 100
+    b = p_b;
+else
+    b = b;
+end
+
+end
+
+function [c_set, a, b] = ransac(data)
 n = 2;
 k = 50;
-t = 70;
+t = 50;
 
 c_set = [];
 maxsize = 0;
+
 
 for i=1:k
     idc = randperm(size(data,1), n);
@@ -158,6 +168,42 @@ end
 c_set = unique(c_set, 'rows');
 c_set = setdiff(c_set, [0 0], 'rows');
 [a, b] = refit(c_set);
+
+end
+
+function [set, a, b] = pullLanes(data)
+thresh = pi/20;
+k = 4;
+
+set  = [];
+
+[c_set, a_, b_] = ransac(data);
+x = [1; 2];
+y = a_*x + b_;
+r_x = x(2)-x(1);
+r_y = y(2)-y(1);
+th_ = atan(r_y/r_x);
+data = setdiff(data, c_set, 'rows');
+set = [set; c_set];
+
+for i=1:k
+    [c_set, a, b] = ransac(data);
+    x = [1; 2];
+    y = a*x + b;
+    r_x = x(2)-x(1);
+    r_y = y(2)-y(1);
+    th = atan(r_y/r_x);
+    if abs(th_-th) < thresh && abs(b_- b) > 800
+        set = [set; c_set];
+        break;
+    end
+    data = setdiff(data, c_set, 'rows');
+end
+a = [a_; a];
+b = [b_; b];
+
+[b,idc] = sort(b);
+a = a(idc);
 
 end
 
