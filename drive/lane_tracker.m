@@ -133,8 +133,6 @@ t = 70;
 c_set = [];
 maxsize = 0;
 
-samp_space = [];
-
 for i=1:k
     idc = randperm(size(data,1), n);
     p1 = data(idc(1),:);
@@ -153,7 +151,6 @@ for i=1:k
         X = data(:,1).*mask; 
         Y = data(:,2).*mask; 
         c_set = [X Y];
-        samp_space = cat(3, samp_space, c_set);
         maxsize = len;
     end
 end
