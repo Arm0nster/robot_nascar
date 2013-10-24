@@ -120,15 +120,11 @@ function [a, b] = filter(a, b, p_a, p_b)
 d_a = abs(p_a - a);
 d_b = abs(p_b - b);
 
-if d_a > pi/20
+if (d_a > pi/30) & (d_b > 50)
     a = p_a;
-else
-    a = a;
-end
-
-if d_b > 100
     b = p_b;
 else
+    a = a;
     b = b;
 end
 
