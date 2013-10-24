@@ -31,11 +31,11 @@ x_pos = 0;
 y_pos = 0;
 theta = 0;
 
-kp = 2;
+kp = .0101;
 kd = 2*sqrt(kp);
 
-con.setaccel(3, 10);
-con.setspeed(3, 254);
+con.setaccel(4, 10);
+con.setspeed(4, 254);
 
 while 1 
 
@@ -45,16 +45,17 @@ while 1
         continue;
     end
     pose = msg.data;
+%    disp(pose);
     y_pos = pose(1);
     theta = pose(2);
 
     encoderPhidgetAPI('r');
     
     [dx, t] = posUpdate();
-    x_pos = x_pos + dx
+    x_pos = x_pos + dx;
 
     if t ~= 0
-        v = dx/(t/100)
+        v = dx/(t/100);
     else
         v = 0;
     end
@@ -62,21 +63,22 @@ while 1
     w = (-kd*tan(theta)) + (-(kp*(y_pos))/(v*cos(theta)));
     alpha = atan(len*w/v)*180/pi;
 
-    % if w > 10000
-    %     % for simulator add maximum
-    %     w = 5;
-    % end
+    if abs(w) > 1000
+        % for simulator add maximum
+        % w = 5;
+        alpha = 0;
+    end
 
 %    robot.setvel(v,w);    
 
     alpha = lookup(alpha);
     con.setpos(0, alpha); 
-    con.setpos(3, servo_out); 
+    con.setpos(4, servo_out); 
 end
 
 % robot.setvel(0,0);
 con.reset(0);
-con.reset(3);
+con.reset(4);
 
 encoderPhidgetAPI('d');
 
@@ -107,7 +109,7 @@ if (velocity == 10)
     p = 254;
 else
     if(velocity == 1)
-        p = 170;
+        p = 200;
     end
 end
 end

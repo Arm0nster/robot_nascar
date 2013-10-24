@@ -24,7 +24,6 @@ X = [1000, 2000];
 Y1 = p_a(1)*X + p_b(1);
 Y2 = p_a(2)*X + p_b(2);
 
-
 subplot(2, 2, 1), h1 = imagesc(pic);axis image;
 subplot(2, 2, 2), h2 = imagesc(I); axis image;
 colormap gray;
@@ -54,13 +53,16 @@ while ~kbhit
     pose = [y, theta];
     % disp(pose);
 
+    car_x = 200;
+    car_y = car_x*tan(theta);
+
     set(h1,'CDATA', pic);
     set(h2, 'CDATA', I);
     colormap gray;
     set(h3, 'XDATA', p_(:,1), 'YDATA', p_(:,2));
     axis([0 3000, -1500 1500]);
     cla(h4);
-    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2);
+    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2); plot([1000 1000+car_x], [y, y+car_y], 'r', 'lineWidth', 2);
     axis([0 3000, -1500 1500]);
     drawnow;
     i = i+1;

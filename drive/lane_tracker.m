@@ -7,7 +7,7 @@ close all;
 % global kbhit;
 % kbhit = false;
 % figure('KeyPressFcn', @my_kbhit);
-figure;
+% figure;
 
 KinectHandles = mxNiCreateContext();
 
@@ -28,18 +28,18 @@ Y1 = p_a(1)*X + p_b(1);
 Y2 = p_a(2)*X + p_b(2);
 
 
-subplot(2, 2, 1), h1 = imagesc(pic);axis image;
-subplot(2, 2, 2), h2 = imagesc(I); axis image;
-colormap gray;
-subplot(2, 2, 3), h3 = plot(p_(:,1), p_(:,2), '.');
-axis([0 3000, -1500 1500]);
-subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
-axis([0 3000, -1500 1500]);
+% subplot(2, 2, 1), h1 = imagesc(pic);axis image;
+% subplot(2, 2, 2), h2 = imagesc(I); axis image;
+% colormap gray;
+% subplot(2, 2, 3), h3 = plot(p_(:,1), p_(:,2), '.');
+% axis([0 3000, -1500 1500]);
+% subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
+% axis([0 3000, -1500 1500]);
 
 while 1
 % while ~kbhit
 % for k=1:1
-    rl_spin(25);
+    rl_spin(15);
 
     [I, P] = getImageData(KinectHandles);
     pic = I;
@@ -63,15 +63,15 @@ while 1
     msg = Message('pose', pose);
     pub.publish(msg);
 
-    set(h1,'CDATA', pic);
-    set(h2, 'CDATA', I);
-    colormap gray;
-    set(h3, 'XDATA', p_(:,1), 'YDATA', p_(:,2));
-    axis([0 3000, -1500 1500]);
-    cla(h4);
-    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2);
-    axis([0 3000, -1500 1500]);
-    drawnow;
+    % set(h1,'CDATA', pic);
+    % set(h2, 'CDATA', I);
+    % colormap gray;
+    % set(h3, 'XDATA', p_(:,1), 'YDATA', p_(:,2));
+    % axis([0 3000, -1500 1500]);
+    % cla(h4);
+    % set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2);
+    % axis([0 3000, -1500 1500]);
+    % drawnow;
 end
 
 mxNiDeleteContext(KinectHandles);
@@ -79,10 +79,10 @@ mxNiDeleteContext(KinectHandles);
 end
 
 function [y, theta] = getPose(X, Y1, Y2)
-
-y = mean(Y2) - 500; 
+y = ((mean(Y2) + mean(Y1))/2);
+% y = mean(Y2) - 600; 
 m = (Y2(2)-Y2(1))/(X(2)-X(1));
-theta = -1*atan(m);
+theta = -1*atan(m) - pi/25;
 
 end
 
@@ -120,7 +120,7 @@ function [a, b] = filter(a, b, p_a, p_b)
 d_a = abs(p_a - a);
 d_b = abs(p_b - b);
 
-if (d_a > pi/30) & (d_b > 50)
+if (d_a > pi/20) & (d_b > 80)
     a = p_a;
     b = p_b;
 else
@@ -189,7 +189,7 @@ for i=1:k
     r_x = x(2)-x(1);
     r_y = y(2)-y(1);
     th = atan(r_y/r_x);
-    if abs(th_-th) < thresh && abs(b_- b) > 800
+    if abs(th_-th) < thresh && abs(b_- b) > 600
         set = [set; c_set];
         break;
     end
@@ -217,7 +217,7 @@ end
 
 function bw = getBWImage(I)
 
-thresh = 8;
+thresh = 9;
 
 I(1:50,:,:) = 0;
 I(130:end,:,:) = 0;
