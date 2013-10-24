@@ -5,22 +5,9 @@ sub = rl_subscribe('pose');
 
 close all;
 
-encoderPhidgetAPI('c'); %connect to encoder
+encoderPhidgetAPI('c'); 
 con = maestro(); 
 
-% robot = iRobotCreate(10);
-% 
-% robot.setworkspace([-1 10 -1.5 1.5]);
-% robot.setworldframe(0);
-% robot.moveroomba( [ 0, (randi([-3,3],1)), 0] );
-
-% plot([0 43],[.5,.5],'linewidth',3);
-% plot([0 43],[-.5,-.5],'linewidth',3);
-% plot([0 0],[-.5,.5],'linewidth',3);
-% plot([43 43],[-.5,.5],'linewidth',3);
-
-
-%may need to be 34 (cm)
 len = .3;
 
 v_goal = 1;
@@ -45,7 +32,6 @@ while 1
         continue;
     end
     pose = msg.data;
-%    disp(pose);
     y_pos = pose(1);
     theta = pose(2);
 
@@ -69,14 +55,12 @@ while 1
         alpha = 0;
     end
 
-%    robot.setvel(v,w);    
 
     alpha = lookup(alpha);
     con.setpos(0, alpha); 
     con.setpos(4, servo_out); 
 end
 
-% robot.setvel(0,0);
 con.reset(0);
 con.reset(4);
 

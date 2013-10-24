@@ -39,7 +39,7 @@ Y2 = p_a(2)*X + p_b(2);
 while 1
 % while ~kbhit
 % for k=1:1
-    rl_spin(15);
+    rl_spin(25);
 
     [I, P] = getImageData(KinectHandles);
     pic = I;
@@ -79,10 +79,23 @@ mxNiDeleteContext(KinectHandles);
 end
 
 function [y, theta] = getPose(X, Y1, Y2)
-y = ((mean(Y2) + mean(Y1))/2);
-% y = mean(Y2) - 600; 
-m = (Y2(2)-Y2(1))/(X(2)-X(1));
-theta = -1*atan(m) - pi/25;
+i = (X(2)-X(1));
+j = (Y2(2)-Y2(1));
+r = [i j];
+b = [1 0];
+r_ = r/norm(r);
+
+
+theta = acos(dot(r_, b));
+alph = (pi/2) - theta;
+
+dist = Y2(1)/sin(alph);
+y = 500 - dist;
+
+% y = ((mean(Y2) + mean(Y1))/2);
+% % y = mean(Y2) - 600; 
+% m = (Y2(2)-Y2(1))/(X(2)-X(1));
+% theta = -1*atan(m) - pi/25;
 
 end
 
