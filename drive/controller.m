@@ -62,11 +62,10 @@ while 1
     w = (-kd*tan(theta)) + (-(kp*(y_pos))/(v*cos(theta)));
     alpha = atan(len*w/v)*180/pi;
 
-    if w > 10000
-        alpha = 90;
-        % for simulator add maximum
-        % w = 5;
-    end
+    % if w > 10000
+    %     % for simulator add maximum
+    %     w = 5;
+    % end
 
 %    robot.setvel(v,w);    
 
