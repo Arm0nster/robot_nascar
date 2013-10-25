@@ -85,17 +85,19 @@ r = [i j];
 b = [1 0];
 r_ = r/norm(r);
 
+theta = acos(dot(b, r_));
 
-theta = acos(dot(r_, b));
-alph = (pi/2) - theta;
-
-dist = Y2(1)/sin(alph);
-y = 500 - dist;
-
-% y = ((mean(Y2) + mean(Y1))/2);
-% % y = mean(Y2) - 600; 
-% m = (Y2(2)-Y2(1))/(X(2)-X(1));
-% theta = -1*atan(m) - pi/25;
+m = j/i;
+if m > 0 
+    theta = -1 * theta;
+    dist = Y2(1)*cos(theta);
+    y = 500 - dist;
+else
+    theta = theta;
+    alph = (pi/2) - theta;
+    dist = Y2(1)/sin(alph);
+    y = 500 - dist;
+end
 
 end
 
