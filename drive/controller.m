@@ -8,8 +8,10 @@ close all;
 
 global kbhit;
 kbhit = false;
-
 figure('KeyPressFcn', @my_kbhit);
+
+drive_servo = 3;
+steer_servo = 0;
 
 
 encoderPhidgetAPI('c'); 
@@ -25,13 +27,13 @@ x_pos = 0;
 y_pos = 0;
 theta = 0;
 
-kp = .071;
+kp = 1.7;
 kd = 2*sqrt(kp);
 
-con.setaccel(4, 10);
-con.setspeed(4, 254);
+con.setaccel(drive_servo, 10);
+con.setspeed(drive_servo, 254);
 
-while x_pos < 15 && ~kbhit 
+while x_pos < 300 && ~kbhit 
 
     rl_spin(10);
     msg = sub.getLatestMessage();
@@ -63,12 +65,12 @@ while x_pos < 15 && ~kbhit
 
     alpha = lookup(alpha);
 
-    con.setpos(0, alpha); 
-    con.setpos(4, servo_out); 
+    con.setpos(steer_servo, alpha); 
+    con.setpos(drive_servo, servo_out); 
 end
 
-con.reset(0);
-con.reset(4);
+con.reset(steer_servo);
+con.reset(drive_servo);
 
 encoderPhidgetAPI('d');
 
@@ -86,7 +88,7 @@ end
 %-51.41 to 42.69
 function pos = lookup(angle)
 angle = angle + 90;
-pos = round((angle - 124.5)/(-0.32));
+pos = round((angle - 125.5)/(-0.32));
 if pos > 254
 	pos = 254;
 elseif pos < 0

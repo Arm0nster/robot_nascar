@@ -40,7 +40,7 @@ Y2 = a(2)*X + b(2);
 while 1
 % while ~kbhit
 % for k=1:1
-    rl_spin(25);
+    rl_spin(20);
 
     [I, P] = getImageData(KinectHandles);
     pic = I;
@@ -87,7 +87,7 @@ theta = acos(dot(basis, r));
 
 m = r(2)/r(1);
 
-if m < 0 
+if m > 0 
     theta = -1 * theta;
 end
 
@@ -100,15 +100,15 @@ b_orth = -1*m_orth*X(1);
 intcp = [(b1-b_orth)/(m_orth-a1), ((b1-b_orth)/(m_orth-a1)*m_orth) + b_orth; ...
         (b2-b_orth)/(m_orth-a2), ((b2-b_orth)/(m_orth-a2)*m_orth) + b_orth];
 
-width = pdist(intcp, 'euclidean');
-d_bot = pdist([X(1), 0; intcp(1, :)], 'euclidean');
-d_top = pdist([X(1), 0; intcp(2, :)], 'euclidean');
+width = dist(intcp);
+d_bot = dist([X(1), 0; intcp(1, :)]);
+d_top = dist([X(1), 0; intcp(2, :)]);
 
-y = 1000*(d_top/width)-500;
+y = 500 - 1000*(d_top/width);
 
 
-% dist = Y2(1)*cos(theta);
-% y = 500 - dist;
+% distance = Y2(1)*cos(theta);
+% y = 500 - distance;
 
 end
 
@@ -126,7 +126,7 @@ function [Y, xpnts, ypnts] = pullLanes(data, X, Y)
 end
 
 
-function [c_set, a, b] = ransac(data)
+function [a, b] = ransac(data)
 n = 2;
 k = 50;
 t = 50;
@@ -201,6 +201,13 @@ p = C\y;
 
 a = p(1);
 b = p(2);
+end
+
+function r = dist(pts)
+
+    r = sum((pts(2, :) - pts(1, :)).^2);
+    r = r.^(1/2);
+
 end
 
 
