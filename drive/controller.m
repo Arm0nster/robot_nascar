@@ -18,7 +18,7 @@ x_pos = 0;
 y_pos = 0;
 theta = 0;
 
-kp = .0101;
+kp = .101;
 kd = 2*sqrt(kp);
 
 con.setaccel(4, 10);

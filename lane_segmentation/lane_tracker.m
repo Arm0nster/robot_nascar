@@ -42,7 +42,7 @@ while ~kbhit
     [Y2, xv2, yv2] = pullLanes(p_, X, Y1+1000);
 
     [y, theta] = getPose(X, Y1, Y2);
-    % pose = [y, theta];
+    pose = [y, theta];
 
     car_x = 200;
     car_y = car_x*tan(theta);
@@ -55,6 +55,7 @@ while ~kbhit
     cla(h4);
     set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
     plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
+    plot([1000 1000+car_x],[y, y+car_y], 'r', 'lineWidth', 3);
     axis([0 3000, -1500 1500]);
     drawnow;
 
@@ -79,19 +80,28 @@ theta = acos(dot(basis, r));
 
 m = r(2)/r(1);
 
-if m > 0 
+if m < 0 
     theta = -1 * theta;
 end
 
-% [a1 b1] = refit(X', Y1');
-% [a2 b2] = refit(X', Y2');
-% 
-% r_orth = [-1*r(2) r(1)]; 
-% Y_orth = (r_orth(2)/r_orth(1))*X;
+[a1 b1] = refit([X' Y1']);
+[a2 b2] = refit([X' Y2']);
+
+r_orth = [-1*r(2) r(1)]; 
+m_orth = r_orth(2)/r_orth(1);
+b_orth = -1*m_orth*X(1);
+intcp = [(b1-b_orth)/(m_orth-a1), ((b1-b_orth)/(m_orth-a1)*m_orth) + b_orth; ...
+        (b2-b_orth)/(m_orth-a2), ((b2-b_orth)/(m_orth-a2)*m_orth) + b_orth];
+
+width = pdist(intcp, 'euclidean');
+d_bot = pdist([X(1), 0; intcp(1, :)], 'euclidean');
+d_top = pdist([X(1), 0; intcp(2, :)], 'euclidean');
+
+y = 1000*(d_top/width)-500;
 
 
-dist = Y2(1)*cos(theta);
-y = 500 - dist;
+% dist = Y2(1)*cos(theta);
+% y = 500 - dist;
 
 end
 
