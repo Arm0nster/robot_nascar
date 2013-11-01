@@ -37,8 +37,9 @@ function log_angles(s_port, m_port)
 		%wait for car to equilibriate in circle	
 		if space_hit
 			space_hit = false;
-			
-			disp(sprintf('Velocity at start: %.2f\n', ticksToMeters(x)/t));	
+
+			[x,t] = encoderPhidgetAPI('s');
+			disp(sprintf('Velocity at start: %.2f\n', ticksToMeters(x)/(t/1000));	
 
 			%press space to stop loop
 			while ~space_hit
@@ -58,11 +59,11 @@ function log_angles(s_port, m_port)
 			if servo_pos > 127
 				delta = -delta;
 			end
-			%fprintf(angles, '%0.2f %d %0.2f %d %d\n', circum, t, vel, motor_speed, servo_pos);
+			
 			%need turning angle and servo_pos
 			fprintf(angles, '%0.3f %d\n', delta, servo_pos);
-			disp(sprintf('%0.3f %d\n', delta, servo_pos));
             		disp(sprintf('Captured\n'));
+			disp(sprintf('Turning Radius: %0.2fm, delta %0.3f at servo %d\n', radius, delta, servo_pos));
             		space_hit = false;
 		end
 
