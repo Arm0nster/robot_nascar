@@ -25,8 +25,8 @@ Y2 = a(2)*X + b(2);
 subplot(2, 2, 1), h1 = imagesc(pic);axis image;
 subplot(2, 2, 2), h2 = imagesc(I); axis image;
 colormap gray;
-subplot(2, 2, 3), h3 = plot([0 3000], [500 500]); 
-hold on; plot([0 3000], [-500 -500]);
+subplot(2, 2, 3), h3 = quiver(0, 1000, 0, 500, 'r', 'LineWidth', 2); 
+hold on; plot([0 3000], [500 500]); plot([0 3000], [-500 -500]);
 axis([0 3000, -1500 1500]);
 subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
 axis([0 3000, -1500 1500]);
@@ -50,12 +50,11 @@ while ~kbhit
     set(h1,'CDATA', pic);
     set(h2, 'CDATA', I);
     colormap gray;
-    % set(h3, 'XDATA', [1000 1000+car_x], 'YDATA', [y, y+car_y]); 
-    % axis([0 3000, -1500 1500]);
+    set(h3, 'XDATA', 1000, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
+    axis([0 3000, -1500 1500]);
     cla(h4);
     set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
     plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
-    plot([1000 1000+car_x],[y, y+car_y], 'r', 'lineWidth', 3);
     axis([0 3000, -1500 1500]);
     drawnow;
 
@@ -80,7 +79,7 @@ theta = acos(dot(basis, r));
 
 m = r(2)/r(1);
 
-if m < 0 
+if m > 0 
     theta = -1 * theta;
 end
 
@@ -93,15 +92,13 @@ b_orth = -1*m_orth*X(1);
 intcp = [(b1-b_orth)/(m_orth-a1), ((b1-b_orth)/(m_orth-a1)*m_orth) + b_orth; ...
         (b2-b_orth)/(m_orth-a2), ((b2-b_orth)/(m_orth-a2)*m_orth) + b_orth];
 
-width = pdist(intcp, 'euclidean');
-d_bot = pdist([X(1), 0; intcp(1, :)], 'euclidean');
-d_top = pdist([X(1), 0; intcp(2, :)], 'euclidean');
-
-y = 1000*(d_top/width)-500;
+width = dist(intcp);
+d_bot = dist([X(1), 0; intcp(1, :)]);
+d_top = dist([X(1), 0; intcp(2, :)]);
 
 
-% dist = Y2(1)*cos(theta);
-% y = 500 - dist;
+y = 500 - d_top*(width/1000);
+
 
 end
 
@@ -156,6 +153,12 @@ c_set = setdiff(c_set, [0 0], 'rows');
 
 end
 
+function r = dist(pts)
+
+    r = sum((pts(2, :) - pts(1, :)).^2);
+    r = r.^(1/2);
+
+end
 
 function [a, b] = refit(data)
 x = data(:,1);
