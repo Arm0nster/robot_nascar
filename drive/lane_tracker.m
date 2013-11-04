@@ -4,11 +4,8 @@ c = rl_init('lane_tracker');
 pub = rl_publish('pose');
 
 close all;
-% global kbhit;
-% kbhit = false;
-% figure('KeyPressFcn', @my_kbhit);
-% figure;
 
+global KinectHandles;
 KinectHandles = mxNiCreateContext();
 
 [I, P] = getImageData(KinectHandles);
@@ -28,18 +25,18 @@ Y1 = a(1)*X + b(1);
 Y2 = a(2)*X + b(2);
 
 
+% figure;
 % subplot(2, 2, 1), h1 = imagesc(pic);axis image;
 % subplot(2, 2, 2), h2 = imagesc(I); axis image;
 % colormap gray;
-% subplot(2, 2, 3), h3 = quiver(0, 1000, 0, 500, 'r', 'LineWidth', 2); 
-% hold on; plot([0 3000], [500 500]); plot([0 3000], [-500 -500]);
-% axis([0 3000, -1500 1500]);
+% subplot(2, 2, 3), h3 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
+% hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
+% axis([0 3, -1.5 1.5]);
 % subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
 % axis([0 3000, -1500 1500]);
 
 while 1
-% while ~kbhit
-% for k=1:1
+
     rl_spin(20);
 
     [I, P] = getImageData(KinectHandles);
@@ -52,24 +49,24 @@ while 1
 
     [y, theta] = getPose(X, Y1, Y2);
     y = y/1000;
-    
+   
     pose = [y, theta];
     msg = Message('pose', pose);
     pub.publish(msg);
 
-    car_x = 200;
+    car_x = .2;
     car_y = car_x*tan(theta);
 
-    set(h1,'CDATA', pic);
-    set(h2, 'CDATA', I);
-    colormap gray;
-    set(h3, 'XDATA', 1000, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
-    axis([0 3000, -1500 1500]);
-    cla(h4);
-    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
-    plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
-    axis([0 3000, -1500 1500]);
-    drawnow;
+    % set(h1,'CDATA', pic);
+    % set(h2, 'CDATA', I);
+    % colormap gray;
+    % set(h3, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
+    % axis([0 3, -1.5 1.5]);
+    % cla(h4);
+    % set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
+    % plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
+    % axis([0 3000, -1500 1500]);
+    % drawnow;
 end
 
 mxNiDeleteContext(KinectHandles);
