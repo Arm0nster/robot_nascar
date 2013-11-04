@@ -55,7 +55,7 @@ while x_pos < 300 && ~kbhit
         v = 0;
     end
 
-    w = (-kd*tan(theta)) + (-(kp*(y_pos))/(v*cos(theta)));
+    w = (-kd*tan(theta)) - ((kp*(y_pos))/(v*cos(theta)));
     alpha = atan(len*w/v)*180/pi;
 
     if abs(w) > 1000
