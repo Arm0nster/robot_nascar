@@ -5,7 +5,6 @@ pub = rl_publish('pose');
 
 close all;
 
-global KinectHandles;
 KinectHandles = mxNiCreateContext();
 
 [I, P] = getImageData(KinectHandles);
@@ -24,6 +23,8 @@ X = [1000, 2700];
 Y1 = a(1)*X + b(1);
 Y2 = a(2)*X + b(2);
 
+global count;
+count = 0;
 
 % figure;
 % subplot(2, 2, 1), h1 = imagesc(pic);axis image;
@@ -43,6 +44,8 @@ while 1
     pic = I;
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
+
+    % logger(I, p_);
 
     [Y1, xv1, yv1] = pullLanes(p_, X, Y1);
     [Y2, xv2, yv2] = pullLanes(p_, X, Y1+1000);
@@ -68,8 +71,6 @@ while 1
     % axis([0 3000, -1500 1500]);
     % drawnow;
 end
-
-mxNiDeleteContext(KinectHandles);
 
 end
 
@@ -221,4 +222,15 @@ end
 function [I, P] = getImageData(KinectHandles)
 I = getRGBImage(KinectHandles);
 P = double(getPointCloud(KinectHandles));
+end
+
+function logger(I, P);
+global count;
+folder_name = './log';
+image_file = strcat(folder_name, '/i',num2str(count),'.png');
+pc_file = strcat(folder_name,'/i',num2str(count),'.mat');
+
+imwrite(I, image_file, 'png');
+save(pc_file, 'P');
+count = count + 1;
 end
