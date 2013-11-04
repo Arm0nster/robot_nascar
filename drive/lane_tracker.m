@@ -52,6 +52,7 @@ while 1
 
     [y, theta] = getPose(X, Y1, Y2);
     y = y/1000;
+    y = refineEst(y, theta);
    
     pose = [y, theta];
     msg = Message('pose', pose);
@@ -72,6 +73,14 @@ while 1
     % drawnow;
 end
 
+end
+
+function b = refineEst(y, theta)
+i = cos(theta);
+j = sin(theta);
+
+m = j/i;
+b = y - m;
 end
 
 function [y, theta] = getPose(X, Y1, Y2)

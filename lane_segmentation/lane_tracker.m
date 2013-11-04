@@ -25,9 +25,9 @@ Y2 = a(2)*X + b(2);
 subplot(2, 2, 1), h1 = imagesc(pic);axis image;
 subplot(2, 2, 2), h2 = imagesc(I); axis image;
 colormap gray;
-subplot(2, 2, 3), h3 = quiver(0, 1000, 0, 500, 'r', 'LineWidth', 2); 
-hold on; plot([0 3000], [500 500]); plot([0 3000], [-500 -500]);
-axis([0 3000, -1500 1500]);
+subplot(2, 2, 3), h3 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
+hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
+axis([0 3, -1.5 1.5]);
 subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
 axis([0 3000, -1500 1500]);
 
@@ -42,16 +42,18 @@ while ~kbhit
     [Y2, xv2, yv2] = pullLanes(p_, X, Y1+1000);
 
     [y, theta] = getPose(X, Y1, Y2);
+    y = y/1000;
+    y = refineEst(y, theta);
     pose = [y, theta];
 
-    car_x = 200;
+    car_x = .2;
     car_y = car_x*tan(theta);
 
     set(h1,'CDATA', pic);
     set(h2, 'CDATA', I);
     colormap gray;
-    set(h3, 'XDATA', 1000, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
-    axis([0 3000, -1500 1500]);
+    set(h3, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
+    axis([0 3, -1.5 1.5]);
     cla(h4);
     set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
     plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
@@ -61,6 +63,14 @@ while ~kbhit
     i = i+1;
 end
 
+end
+
+function b = refineEst(y, theta)
+i = cos(theta);
+j = sin(theta);
+
+m = j/i;
+b = y - m;
 end
 
 function [y, theta] = getPose(X, Y1, Y2)
