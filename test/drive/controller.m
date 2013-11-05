@@ -1,7 +1,8 @@
 function controller()
 
 c = rl_init('controller');
-sub = rl_subscribe('pose');
+sub = rl_subscribe('control');
+pub = rl_publish('speed');
 
 close all;
 
@@ -19,53 +20,37 @@ con = maestro();
 
 len = .3;
 
-v_goal = 1;
+% v_goal = 1;
 % servo_out = setSpeed(v_goal);
-servo_out = 190; 
+servo_out = 170;
 
 v = 0;
 x_pos = 0;
-y_pos = 0;
-theta = 0;
-y_diff = 0;
-
-kp = 3.0;
-kd = 2*sqrt(kp);
-ki = 0;
 
 con.setaccel(drive_servo, 10);
 con.setspeed(drive_servo, 254);
 
-while x_pos < 200 && ~kbhit 
+while x_pos < 150 && ~kbhit 
 
-    rl_spin(10);
-    msg = sub.getLatestMessage();
-    if isempty(msg)
-        continue;
-    end
-    pose = msg.data;
-    y_pos = pose(1);
-    theta = pose(2);
+    rl_spin(40);
 
     encoderPhidgetAPI('r');
-    
     [dx, t] = posUpdate();
     x_pos = x_pos + dx;
-
     if t ~= 0
         v = dx/(t/1000);
     else
         v = 0;
     end
+    msg = Message('speed', v);
+    pub.publish(msg);
 
-    w = (-kd*tan(theta)) - ((kp*(y_pos))/(v*cos(theta)));
-    alpha = atan(len*w/v)*180/pi;
 
-    if abs(w) > 1000
-        alpha = 0;
+    control_msg = sub.getLatestMessage();
+    if isempty(control_msg)
+        continue;
     end
-
-
+    alpha = control_msg.data;
     alpha = lookup(alpha);
 
     con.setpos(steer_servo, alpha); 
