@@ -6,7 +6,7 @@ global kbhit;
 kbhit = false;
 figure('KeyPressFcn', @my_kbhit);
 
-i = 1;
+i = 1000;
 [I, P] = getImageData(i);
 pic = I;
 I = getBWImage(I);
@@ -38,6 +38,8 @@ while ~kbhit
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
+    X_ = X;
+    [X_, Y1] = biasLane(X, Y1);
     [Y1, xv1, yv1] = pullLanes(p_, X, Y1);
     [Y2, xv2, yv2] = pullLanes(p_, X, Y1+1000);
 
@@ -112,10 +114,19 @@ y = 500 - d_top*(width/1000);
 
 end
 
+function [X_, Y_] = biasLane(X, Y)
+    theta = pi/18;
+    R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
+    P_ = R*[X' Y'];
+    P_ = P_';
+    X_ = P_(1,:);
+    Y_ = P_(2,:) + 10;
+end
+
 function [Y, xpnts, ypnts] = pullLanes(data, X, Y)
 
-    xpnts = [X(1)-150 X(1)-150 X(2)+150 X(2)+150];
-    ypnts = [Y(1)+150 Y(1)-150 Y(2)-150 Y(2)+150];
+    xpnts = [X(1)-250 X(1)-250 X(2)+250 X(2)+250];
+    ypnts = [Y(1)+100 Y(1)-100 Y(2)-100 Y(2)+100];
 
     inliers_mask = inpolygon(data(:,1), data(:,2), xpnts, ypnts);
     inliers = data(inliers_mask,:);
