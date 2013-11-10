@@ -6,7 +6,7 @@ global kbhit;
 kbhit = false;
 figure('KeyPressFcn', @my_kbhit);
 
-i = 1000;
+i = 1;
 [I, P] = getImageData(i);
 pic = I;
 I = getBWImage(I);
@@ -22,48 +22,102 @@ X = [1000, 2700];
 Y1 = a(1)*X + b(1);
 Y2 = a(2)*X + b(2);
 
-subplot(2, 2, 1), h1 = imagesc(pic);axis image;
-subplot(2, 2, 2), h2 = imagesc(I); axis image;
+global gaussianKern;
+dilation_factor = 11;
+gaussianKern = makeGaussian(dilation_factor);
+
+
+subplot(1, 2, 1), h1 = imagesc(I); axis image;
+subplot(1, 2, 2), h2 = imagesc(I); axis image;
 colormap gray;
-subplot(2, 2, 3), h3 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
-hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
-axis([0 3, -1.5 1.5]);
-subplot(2, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
-axis([0 3000, -1500 1500]);
+% subplot(3, 2, 3), h3 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
+% hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
+% axis([0 3, -1.5 1.5]);
+% subplot(3, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
+% axis([0 3000, -1500 1500]);
 
 while ~kbhit
 
     [I, P] = getImageData(i);
-    pic = I;
+    % pic = I;
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
-    X_ = X;
+    % lane1 = [];
+    % lane2 = [];
+    % obstacles = [];
     [X_, Y1] = biasLane(X, Y1);
-    [Y1, xv1, yv1] = pullLanes(p_, X, Y1);
-    [Y2, xv2, yv2] = pullLanes(p_, X, Y1+1000);
+    [Y1, lane1] = pullLanes(p_, X_, Y1);
+    [Y2, lane2] = pullLanes(p_, X_, Y1+1000);
+    obstacles = [lane1; lane2];
 
-    [y, theta] = getPose(X, Y1, Y2);
-    y = y/1000;
-    y = refineEst(y, theta);
-    pose = [y, theta];
 
-    car_x = .2;
-    car_y = car_x*tan(theta);
+    % [y, theta] = getPose(X, Y1, Y2);
+    % y = y/1000;
+    % y = refineEst(y, theta);
+    % pose = [y, theta];
 
-    set(h1,'CDATA', pic);
-    set(h2, 'CDATA', I);
+    % car_x = .2;
+    % car_y = car_x*tan(theta);
+    
+    costmap = getOccupancyGrid(obstacles);
+
+   
+
+
+
+    set(h1,'CDATA', I);
     colormap gray;
-    set(h3, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
-    axis([0 3, -1.5 1.5]);
-    cla(h4);
-    set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
-    plot(xv1, yv1); plot(xv2, yv2, 'r'); plot(p_(:,1), p_(:,2), '.');
-    axis([0 3000, -1500 1500]);
+
+    costmap = flipdim(costmap, 1);
+    set(h2, 'CDATA', costmap); axis image;
+    colormap default;
+    % set(h3, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
+    % axis([0 3, -1.5 1.5]);
+    % cla(h4);
+    % set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
+    % % plot(xv1, yv1); plot(xv2, yv2, 'r'); 
+    % plot(p_(:,1), p_(:,2), '.');
+    % axis([0 3000, -1500 1500]);
     drawnow;
 
     i = i+1;
 end
+
+end
+
+function costmap = getOccupancyGrid(obstacles)
+global gaussianKern;
+% for millimeters
+units = 1000;
+% centimeter resolution
+granularity = 0.05;
+inflation = 1;
+
+tiles = 1/granularity;
+scale = units * granularity;
+xres = 3*tiles;
+yres = 3*tiles;
+costmap = zeros(xres, yres);
+
+obstacles = obstacles/scale;
+obstacles = round(obstacles);
+obstacles(:, 2) = obstacles(:,2) + ceil(yres/2);
+
+% cropping
+mask = (obstacles(:,2) > 0 & obstacles(:,2) < yres);
+obstacles(:, 1) = obstacles(:,1).*mask;
+obstacles(:, 2) = obstacles(:,2).*mask;
+obstacles = unique(obstacles, 'rows');
+obstacles = setdiff(obstacles, [0 0], 'rows');
+
+cm_idcs = sub2ind([xres yres], obstacles(:,2), obstacles(:,1));
+costmap(cm_idcs) = 1;
+
+costmap = bwmorph(costmap, 'dilate', inflation);
+costmap = conv2(double(costmap), gaussianKern, 'same');
+
+% keyboard;
 
 end
 
@@ -123,21 +177,21 @@ function [X_, Y_] = biasLane(X, Y)
     Y_ = P_(2,:) + 10;
 end
 
-function [Y, xpnts, ypnts] = pullLanes(data, X, Y)
+function [Y, inliers] = pullLanes(data, X, Y)
 
-    xpnts = [X(1)-250 X(1)-250 X(2)+250 X(2)+250];
-    ypnts = [Y(1)+100 Y(1)-100 Y(2)-100 Y(2)+100];
+    xpnts = [X(1)-150 X(1)-150 X(2)+150 X(2)+150];
+    ypnts = [Y(1)+150 Y(1)-150 Y(2)-150 Y(2)+150];
 
     inliers_mask = inpolygon(data(:,1), data(:,2), xpnts, ypnts);
     inliers = data(inliers_mask,:);
     
-    [a, b] = ransac(inliers);
+    [a, b, inliers] = ransac(inliers);
     
     Y = a*X + b;
 end
 
 
-function [a, b] = ransac(data)
+function [a, b, c_set] = ransac(data)
 
 n = 2;
 k = 40;
@@ -227,6 +281,17 @@ I = rgb2gray(I);
 bw = edge(I, 'sobel');
 bw(120:end, :) = 0;
 bw(1:50, :) = 0;
+end
+
+function K = makeGaussian(n)
+K = [1 1];
+
+for i=3:n
+    K = conv([1 1], K);
+end
+
+K = conv2(K, K');
+K = K/sum(sum(K));
 end
 
 function [I, P] = getImageData(i)
