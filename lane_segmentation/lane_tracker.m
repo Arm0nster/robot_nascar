@@ -1,12 +1,16 @@
 function lane_tracker()
 
+
+c = rl_init('lane_tracker');
+pub = rl_publish('costmap');
+
 close all;
 
-global kbhit;
-kbhit = false;
-figure('KeyPressFcn', @my_kbhit);
+% global kbhit;
+% kbhit = false;
+% figure('KeyPressFcn', @my_kbhit);
 
-i = 1;
+i = 1000;
 [I, P] = getImageData(i);
 pic = I;
 I = getBWImage(I);
@@ -27,59 +31,37 @@ dilation_factor = 11;
 gaussianKern = makeGaussian(dilation_factor);
 
 
-subplot(1, 2, 1), h1 = imagesc(I); axis image;
-subplot(1, 2, 2), h2 = imagesc(I); axis image;
-colormap gray;
-% subplot(3, 2, 3), h3 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
-% hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
-% axis([0 3, -1.5 1.5]);
-% subplot(3, 2, 4), h4 = plot(X, Y1); hold on; plot(X, Y2);
-% axis([0 3000, -1500 1500]);
+% subplot(1, 2, 1), h1 = imagesc(I); axis image;
+% subplot(1, 2, 2), h2 = imagesc(I); axis image;
+% colormap gray;
 
-while ~kbhit
+while 1
+    
+    rl_spin(30);
 
     [I, P] = getImageData(i);
-    % pic = I;
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
-    % lane1 = [];
-    % lane2 = [];
-    % obstacles = [];
     [X_, Y1] = biasLane(X, Y1);
     [Y1, lane1] = pullLanes(p_, X_, Y1);
     [Y2, lane2] = pullLanes(p_, X_, Y1+1000);
     obstacles = [lane1; lane2];
-
-
-    % [y, theta] = getPose(X, Y1, Y2);
-    % y = y/1000;
-    % y = refineEst(y, theta);
-    % pose = [y, theta];
-
-    % car_x = .2;
-    % car_y = car_x*tan(theta);
     
     costmap = getOccupancyGrid(obstacles);
 
+    msg = Message('costmap', costmap);
+    pub.publish(msg);
    
 
 
 
-    set(h1,'CDATA', I);
-    colormap gray;
-
-    costmap = flipdim(costmap, 1);
-    set(h2, 'CDATA', costmap); axis image;
-    colormap default;
-    % set(h3, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
-    % axis([0 3, -1.5 1.5]);
-    % cla(h4);
-    % set(h4, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2, 'r'); 
-    % % plot(xv1, yv1); plot(xv2, yv2, 'r'); 
-    % plot(p_(:,1), p_(:,2), '.');
-    % axis([0 3000, -1500 1500]);
-    drawnow;
+    % set(h1,'CDATA', I);
+    % colormap gray;
+    % costmap = flipdim(costmap, 1);
+    % set(h2, 'CDATA', costmap); axis image;
+    % colormap default;
+    % drawnow;
 
     i = i+1;
 end
@@ -90,7 +72,7 @@ function costmap = getOccupancyGrid(obstacles)
 global gaussianKern;
 % for millimeters
 units = 1000;
-% centimeter resolution
+% 5 centimeter resolution
 granularity = 0.05;
 inflation = 1;
 
