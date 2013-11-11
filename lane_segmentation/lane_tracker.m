@@ -31,9 +31,9 @@ dilation_factor = 11;
 gaussianKern = makeGaussian(dilation_factor);
 
 
-% subplot(1, 2, 1), h1 = imagesc(I); axis image;
-% subplot(1, 2, 2), h2 = imagesc(I); axis image;
-% colormap gray;
+subplot(1, 2, 1), h1 = imagesc(I); axis image;
+subplot(1, 2, 2), h2 = imagesc(I); axis image;
+colormap gray;
 
 while 1
     
@@ -56,12 +56,12 @@ while 1
 
 
 
-    % set(h1,'CDATA', I);
-    % colormap gray;
-    % costmap = flipdim(costmap, 1);
-    % set(h2, 'CDATA', costmap); axis image;
-    % colormap default;
-    % drawnow;
+    set(h1,'CDATA', I);
+    colormap gray;
+    costmap = flipdim(costmap, 1);
+    set(h2, 'CDATA', costmap); axis image;
+    colormap default;
+    drawnow;
 
     i = i+1;
 end
