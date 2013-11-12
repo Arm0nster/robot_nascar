@@ -5,7 +5,7 @@ c = rl_init('lane_tracker');
 pub = rl_publish('costmap');
 
 
-i = 1;
+KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
 T = dlmread('translation');
@@ -29,7 +29,7 @@ kern_size = 13;
 gaussianKern = makeGaussian(kern_size);
 
 
-% [I, P] = getImageData(i);
+% [I, P] = getImageData(KinectHandles);
 % subplot(1, 2, 1), h1 = imagesc(I); axis image;
 % subplot(1, 2, 2), h2 = imagesc(I); axis image;
 % colormap gray;
@@ -38,7 +38,7 @@ while 1
     
     rl_spin(30);
 
-    [I, P] = getImageData(i);
+    [I, P] = getImageData(KinectHandles);
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
@@ -59,8 +59,6 @@ while 1
     % set(h2, 'CDATA', costmap); axis image;
     % colormap default;
     % drawnow;
-
-    i = i+1;
 end
 
 end
@@ -216,11 +214,7 @@ K = conv2(K, K');
 K = K/sum(sum(K));
 end
 
-function [I, P] = getImageData(i)
-folder = 'Image-10-17/ImageLapData/';
-im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
-pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
-I = imread(im_file);
-P = load(pc_file, '-mat');
-P = P.P;
+function [I, P] = getImageData(KinectHandles)
+I = getRGBImage(KinectHandles);
+P = double(getPointCloud(KinectHandles));
 end
