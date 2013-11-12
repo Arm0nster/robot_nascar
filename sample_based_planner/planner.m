@@ -1,4 +1,5 @@
 function planner()
+close all;
 
 c = rl_init('planner');
 sub = rl_subscribe('costmap');
@@ -11,14 +12,16 @@ global sim_granularity;
 global v;
 global w_max;
 global w_granularity;
+global sim_sweep;
 
-w_gain = 75;
+w_gain = 35;
 obstacle_gain = 100;
 costmap_res = 0.05;
 sim_granularity = 21;
 v = 3.5;
 w_max = .5;
 w_granularity = 27; 
+sim_sweep = pi/9;
 
 
 figure;
@@ -53,6 +56,7 @@ global sim_granularity;
 global v;
 global w_max;
 global w_granularity;
+global sim_sweep;
 
 x_res = size(costmap, 2); 
 y_res = size(costmap, 1); 
@@ -60,7 +64,7 @@ y_res = size(costmap, 1);
 w_space = linspace(-w_max, w_max, w_granularity);
 
 R = v./w_space';
-th = linspace(0, pi/6, sim_granularity);
+th = linspace(0, sim_sweep, sim_granularity);
 s = sin(th);
 
 r = R*s;
