@@ -69,6 +69,7 @@ end
 
 end
 
+% creates tan occupancy grid which is passed into the planner
 function costmap = getOccupancyGrid(obstacles)
 global gaussianKern;
 global units;
@@ -81,6 +82,7 @@ xres = 3*tiles;
 yres = 3*tiles;
 costmap = zeros(xres, yres);
 
+% place obstacles in bins
 obstacles = obstacles/scale;
 obstacles = round(obstacles);
 obstacles(:, 2) = obstacles(:,2) + ceil(yres/2);
@@ -95,13 +97,12 @@ obstacles = setdiff(obstacles, [0 0], 'rows');
 cm_idcs = sub2ind([xres yres], obstacles(:,2), obstacles(:,1));
 costmap(cm_idcs) = 1;
 
+% inflation of obstacles
 costmap = bwmorph(costmap, 'dilate', inflation);
 costmap = conv2(double(costmap), gaussianKern, 'same');
-
-% keyboard;
-
 end
 
+% hack to bias the region of interest towards the left
 function [X_, Y_] = biasLane(X, Y)
     theta = pi/18;
     R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
@@ -111,6 +112,7 @@ function [X_, Y_] = biasLane(X, Y)
     Y_ = P_(2,:) + 10;
 end
 
+% extracts lans from a region of interest
 function [Y, inliers] = pullLanes(data, X, Y)
 
     xpnts = [X(1)-150 X(1)-150 X(2)+150 X(2)+150];
@@ -125,6 +127,7 @@ function [Y, inliers] = pullLanes(data, X, Y)
 end
 
 
+% ransac finds the best line without outliers using the ransac algorithm
 function [a, b, c_set] = ransac(data)
 
 n = 2;
@@ -162,6 +165,7 @@ c_set = setdiff(c_set, [0 0], 'rows');
 
 end
 
+% refit uses least squares to find the best parameters for a line from a set of points
 function [a, b] = refit(data)
 x = data(:,1);
 y = data(:,2);
@@ -173,6 +177,8 @@ a = p(1);
 b = p(2);
 end
 
+% transform uses the calibration to transfrom a pointcloud from the sensor 
+%   frame to our car frame
 function p = transform(R, T, I, P)
 X = P(:,:,1).*I;
 Y = P(:,:,2).*I;
@@ -202,6 +208,7 @@ p = ps_;
 
 end
 
+% basic image processing on our raw image, returns the bitmap of edges
 function bw = getBWImage(I)
 I = rgb2gray(I);
 bw = edge(I, 'sobel');
@@ -209,6 +216,8 @@ bw(120:end, :) = 0;
 bw(1:50, :) = 0;
 end
 
+% creates a gaussian kernel which is used to create an exponential decay fx
+% around our inflated obstacle
 function K = makeGaussian(n)
 K = [1 1];
 

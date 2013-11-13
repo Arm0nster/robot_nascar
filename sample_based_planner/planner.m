@@ -5,6 +5,7 @@ c = rl_init('planner');
 sub = rl_subscribe('costmap');
 pub = rl_publish('control');
 
+% parameters
 global costmap_res;
 global costmap_x_res;
 global costmap_y_res;
@@ -50,6 +51,8 @@ end
 
 end
 
+% uses the indices each trajectory would occupy to evaluate the cost of
+% following such a trajectory, and then returns the one of the lowest cost
 function [opt_w, costmap] = findBestTrajectory(costmap, w_space, idcs, space_dim)
 global w_gain;
 global obstacle_gain;
@@ -78,6 +81,8 @@ costmap(t(:, opt_idx)) = 1;
 
 end
 
+% returns the indices that the set of possible trajectories would traverse
+% in our costmap
 function [idcs, space_dim] = getIndices(w_space)
 global costmap_res;
 global costmap_x_res;
@@ -106,6 +111,7 @@ idcs = sub2ind([costmap_x_res costmap_y_res], idcs(:,1), idcs(:,2));
 
 end
 
+% crops the indices of our circles to only those points that would fit in the costmap
 function [idcs] = filterPoints(traj_points)
 global costmap_x_res;
 global costmap_y_res;
@@ -124,6 +130,7 @@ idcs = traj_points;
 
 end
 
+% creates our sample space of possible omega values
 function [space] = getSampleSpace()
 global w_min;
 global w_max;
@@ -131,6 +138,7 @@ global w_granularity;
 space = linspace(w_min, w_max, w_granularity);
 end
 
+% finds the indices a circle would occupy in matrix using bresenhams circle algorithm
 function [idcs] = midPointCircle(radius)
 xc = 0;
 yc = int16(radius);
