@@ -112,7 +112,7 @@ function [X_, Y_] = biasLane(X, Y)
     Y_ = P_(2,:) + 10;
 end
 
-% extracts lans from a region of interest
+% extracts lanes from a region of interest
 function [Y, inliers] = pullLanes(data, X, Y)
 
     xpnts = [X(1)-150 X(1)-150 X(2)+150 X(2)+150];
