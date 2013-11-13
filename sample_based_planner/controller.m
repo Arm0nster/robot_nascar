@@ -15,7 +15,6 @@ con = maestro();
 drive_servo = 3;
 steer_servo = 0;
 len = .3;
-v_goal = 1;
 servo_out = 210; 
 
 v = 0;
@@ -29,6 +28,7 @@ while x_pos < 200 && ~kbhit
     rl_spin(40);
     msg = sub.getLatestMessage();
     if isempty(msg)
+        con.reset(drive_servo);
         continue;
     end
     control = msg.data;
@@ -46,11 +46,6 @@ while x_pos < 200 && ~kbhit
 
     w = control;
     alpha = atan(len*w/v)*180/pi;
-
-    if abs(w) > 1000
-        alpha = 0;
-    end
-
 
     alpha = lookup(alpha);
 

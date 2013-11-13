@@ -4,8 +4,8 @@ close all;
 c = rl_init('lane_tracker');
 pub = rl_publish('costmap');
 
-
-i = 1;
+i = 0;
+% KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
 T = dlmread('translation');
@@ -23,13 +23,13 @@ global inflation;
 
 units = 1000;
 granularity = 0.05;
-inflation = 3;
+inflation = 2;
 
-kern_size = 13;
+kern_size = 11;
 gaussianKern = makeGaussian(kern_size);
 
 
-% [I, P] = getImageData(i);
+% [I, P] = getImageData(KinectHandles);
 % subplot(1, 2, 1), h1 = imagesc(I); axis image;
 % subplot(1, 2, 2), h2 = imagesc(I); axis image;
 % colormap gray;
@@ -38,6 +38,7 @@ while 1
     
     rl_spin(30);
 
+    % [I, P] = getImageData(KinectHandles);
     [I, P] = getImageData(i);
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
@@ -53,14 +54,13 @@ while 1
     pub.publish(msg);
 
 
+    i = i + 1;
     % set(h1,'CDATA', I);
     % colormap gray;
     % costmap = flipdim(costmap, 1);
     % set(h2, 'CDATA', costmap); axis image;
     % colormap default;
     % drawnow;
-
-    i = i+1;
 end
 
 end
@@ -224,3 +224,7 @@ I = imread(im_file);
 P = load(pc_file, '-mat');
 P = P.P;
 end
+% function [I, P] = getImageData(KinectHandles)
+% I = getRGBImage(KinectHandles);
+% P = double(getPointCloud(KinectHandles));
+% end
