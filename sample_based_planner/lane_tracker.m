@@ -69,7 +69,7 @@ end
 
 end
 
-% creates tan occupancy grid which is passed into the planner
+% creates an occupancy grid which is passed into the planner
 function costmap = getOccupancyGrid(obstacles)
 global gaussianKern;
 global units;
