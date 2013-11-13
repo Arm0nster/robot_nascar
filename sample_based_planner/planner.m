@@ -43,9 +43,7 @@ while 1
     msg = Message('control', control);
     pub.publish(msg);
 
-    disp(control);
-    
-
+    % disp(control);
     costmap = flipdim(costmap, 1);
     set(h, 'CDATA', costmap); axis image;
 end

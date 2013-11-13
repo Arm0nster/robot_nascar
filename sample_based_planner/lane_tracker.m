@@ -30,9 +30,11 @@ gaussianKern = makeGaussian(kern_size);
 
 
 % [I, P] = getImageData(KinectHandles);
-% subplot(1, 2, 1), h1 = imagesc(I); axis image;
-% subplot(1, 2, 2), h2 = imagesc(I); axis image;
-% colormap gray;
+[I, P] = getImageData(i);
+subplot(1, 2, 1), h1 = imagesc(I); axis image;
+subplot(1, 2, 2), h2 = plot(X, Y1); hold on; plot(X, Y2);
+axis([0 3000, -1500 1500]);
+colormap gray;
 
 while 1
     
@@ -43,7 +45,8 @@ while 1
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
-    [X_, Y1] = biasLane(X, Y1);
+    % [X_, Y1] = biasLane(X, Y1);
+    X_ = X;
     [Y1, lane1] = pullLanes(p_, X_, Y1);
     [Y2, lane2] = pullLanes(p_, X_, Y1+1000);
     obstacles = [lane1; lane2];
@@ -55,12 +58,13 @@ while 1
 
 
     i = i + 1;
-    % set(h1,'CDATA', I);
-    % colormap gray;
-    % costmap = flipdim(costmap, 1);
-    % set(h2, 'CDATA', costmap); axis image;
-    % colormap default;
-    % drawnow;
+    set(h1,'CDATA', I);
+    colormap gray;
+    cla(h2);
+    set(h2, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2); 
+    plot(obstacles(:,1), obstacles(:,2), 'b.'); axis equal;
+    axis([0 3000, -1500 1500]); 
+    drawnow;
 end
 
 end
