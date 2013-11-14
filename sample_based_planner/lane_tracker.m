@@ -30,11 +30,11 @@ gaussianKern = makeGaussian(kern_size);
 
 
 % [I, P] = getImageData(KinectHandles);
-[I, P] = getImageData(i);
-subplot(1, 2, 1), h1 = imagesc(I); axis image;
-subplot(1, 2, 2), h2 = plot(X, Y1); hold on; plot(X, Y2);
-axis([0 3000, -1500 1500]);
-colormap gray;
+% % [I, P] = getImageData(i);
+% subplot(1, 2, 1), h1 = imagesc(I); axis image;
+% subplot(1, 2, 2), h2 = plot(X, Y1); hold on; plot(X, Y2);
+% axis([0 3000, -1500 1500]);
+% colormap gray;
 
 while 1
     
@@ -58,13 +58,13 @@ while 1
 
 
     i = i + 1;
-    set(h1,'CDATA', I);
-    colormap gray;
-    cla(h2);
-    set(h2, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2); 
-    plot(obstacles(:,1), obstacles(:,2), 'b.'); axis equal;
-    axis([0 3000, -1500 1500]); 
-    drawnow;
+    % set(h1,'CDATA', I);
+    % colormap gray;
+    % cla(h2);
+    % set(h2, 'XDATA', X, 'YDATA', Y1); hold on; plot(X, Y2); 
+    % plot(obstacles(:,1), obstacles(:,2), 'b.'); axis equal;
+    % axis([0 3000, -1500 1500]); 
+    % drawnow;
 end
 
 end
@@ -237,6 +237,7 @@ I = imread(im_file);
 P = load(pc_file, '-mat');
 P = P.P;
 end
+
 % function [I, P] = getImageData(KinectHandles)
 % I = getRGBImage(KinectHandles);
 % P = double(getPointCloud(KinectHandles));

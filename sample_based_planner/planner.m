@@ -22,15 +22,15 @@ costmap_y_res = 3*(1/costmap_res);
 w_gain = 35;
 obstacle_gain = 100;
 v_max = 3.5;
-w_min = -.5;
-w_max = .5;
-w_granularity = 15; 
+w_min = -2.5;
+w_max = 2.5;
+w_granularity = 21; 
 
 w_space = getSampleSpace();
 [idcs, space_dim] = getIndices(w_space);
 
-figure;
-h = imagesc(zeros(1));
+% figure;
+% h = imagesc(zeros(1));
 while 1
     rl_spin(10);
     msg = sub.getLatestMessage();
@@ -45,8 +45,9 @@ while 1
     pub.publish(msg);
 
     % disp(control);
-    costmap = flipdim(costmap, 1);
-    set(h, 'CDATA', costmap); axis image;
+    % costmap(idcs) = 1;
+    % costmap = flipdim(costmap, 1);
+    % set(h, 'CDATA', costmap); axis image;
 end
 
 end
@@ -57,12 +58,10 @@ function [opt_w, costmap] = findBestTrajectory(costmap, w_space, idcs, space_dim
 global w_gain;
 global obstacle_gain;
 
-
 obstacle_cost = costmap(idcs);
 obstacle_cost = reshape(obstacle_cost, space_dim);
 
 obstacle_cost = sum(obstacle_cost, 1);
-% obstacle_cost = max(obstacle_cost, [], 1);
 
 obstacle_cost = 10000*(obstacle_cost == 1) + obstacle_cost;
 w_cost = abs(w_space);
@@ -76,8 +75,9 @@ total_cost = obstacle_cost + w_cost;
 [opt_cost, opt_idx] = min(total_cost);
 opt_w = w_space(opt_idx);
 
-t = reshape(idcs, space_dim);
-costmap(t(:, opt_idx)) = 1;
+% Uncomment to display optimal trajectory
+% t = reshape(idcs, space_dim);
+% costmap(t(:, opt_idx)) = 1;
 
 end
 
@@ -91,22 +91,31 @@ global w_granularity;
 global v_max;
 
 rads = v_max./w_space';
+R = rads./costmap_res;
 
-rads = rads(1:ceil(w_granularity/2));
+R_pos = R(find(R > 0));
+R_neg = R(find(R < 0));
 
-R = abs(rads./costmap_res);
-traj_points = arrayfun(@midPointCircle, R, 'UniformOutput', false);
+tp_pos = arrayfun(@midPointCircle, R_pos, R_pos, 'UniformOutput', false);
+tp_neg = arrayfun(@midPointCircle, abs(R_neg), R_neg, 'UniformOutput', false);
+traj_points = [tp_neg; tp_pos];
+
+traj_points = arrayfun(@flipxy, traj_points, 'UniformOutput', false);
 traj_points = arrayfun(@filterPoints, traj_points, 'UniformOutput', false);
 
-space_dim = [size(traj_points{1}, 1) w_granularity];
+set_sizes = cellfun(@size, traj_points, 'UniformOutput', false);
+set_sizes = cell2mat(set_sizes);
+set_sizes = set_sizes(:,1);
+min_size = min(set_sizes);
+for i=1:size(traj_points,1)
+    t = traj_points{i};
+    t = sortrows(t, 2);
+    traj_points{i} = t(1:min_size, :);
+end
 
-straight_traj = traj_points{end};
-traj_points(end) = [];
+space_dim = [min_size w_granularity];
+
 idcs = cell2mat(traj_points);
-mirror = [-1.*idcs(:,1), idcs(:,2)];
-idcs = [mirror; straight_traj; idcs];
-idcs(:,1) = idcs(:,1) + floor(costmap_x_res/2);
-
 idcs = sub2ind([costmap_x_res costmap_y_res], idcs(:,1), idcs(:,2));
 
 end
@@ -117,9 +126,9 @@ global costmap_x_res;
 global costmap_y_res;
 
 traj_points = cell2mat(traj_points);
-traj_points = flipdim(traj_points, 2);
+traj_points(:,1) = traj_points(:,1) + floor(costmap_x_res/2);
 
-x_filter = int16((traj_points(:,1) < costmap_x_res) & (traj_points(:,1) > -1));
+x_filter = int16((traj_points(:,1) < costmap_x_res) & (traj_points(:,1) > 1));
 y_filter = int16((traj_points(:,2) < costmap_y_res) & (traj_points(:,2) > 1));
 
 traj_points = traj_points.*[x_filter x_filter];
@@ -139,9 +148,9 @@ space = linspace(w_min, w_max, w_granularity);
 end
 
 % finds the indices a circle would occupy in matrix using bresenhams circle algorithm
-function [idcs] = midPointCircle(radius)
+function [idcs] = midPointCircle(radius, yc)
 xc = 0;
-yc = int16(radius);
+yc = int16(yc);
 
 x = int16(0);
 y = int16(radius);
@@ -176,4 +185,10 @@ while (x < y - 1)
     ];
 end
 
+end
+
+function [idcs] = flipxy(traj_points)
+traj_points = cell2mat(traj_points);
+traj_points = flipdim(traj_points, 2);
+idcs = traj_points;
 end

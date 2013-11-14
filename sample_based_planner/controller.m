@@ -15,7 +15,7 @@ con = maestro();
 drive_servo = 3;
 steer_servo = 0;
 len = .3;
-servo_out = 210; 
+servo_out = 195; 
 
 v = 0;
 x_pos = 0;
@@ -28,7 +28,6 @@ while x_pos < 200 && ~kbhit
     rl_spin(40);
     msg = sub.getLatestMessage();
     if isempty(msg)
-        con.reset(drive_servo);
         continue;
     end
     control = msg.data;
@@ -41,7 +40,7 @@ while x_pos < 200 && ~kbhit
     if t ~= 0
         v = dx/(t/1000);
     else
-        v = 0;
+        v = 0.001;
     end
 
     w = control;
