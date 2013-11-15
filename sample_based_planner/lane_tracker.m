@@ -4,8 +4,8 @@ close all;
 c = rl_init('lane_tracker');
 pub = rl_publish('costmap');
 
-i = 0;
-% KinectHandles = mxNiCreateContext();
+% i = 0;
+KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
 T = dlmread('translation');
@@ -40,8 +40,8 @@ while 1
     
     rl_spin(30);
 
-    % [I, P] = getImageData(KinectHandles);
-    [I, P] = getImageData(i);
+    [I, P] = getImageData(KinectHandles);
+    % [I, P] = getImageData(i);
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
@@ -57,7 +57,7 @@ while 1
     pub.publish(msg);
 
 
-    i = i + 1;
+    % i = i + 1;
     % set(h1,'CDATA', I);
     % colormap gray;
     % cla(h2);
@@ -229,16 +229,16 @@ K = conv2(K, K');
 K = K/sum(sum(K));
 end
 
-function [I, P] = getImageData(i)
-folder = 'Image-10-17/ImageLapData/';
-im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
-pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
-I = imread(im_file);
-P = load(pc_file, '-mat');
-P = P.P;
-end
-
-% function [I, P] = getImageData(KinectHandles)
-% I = getRGBImage(KinectHandles);
-% P = double(getPointCloud(KinectHandles));
+% function [I, P] = getImageData(i)
+% folder = 'Image-10-17/ImageLapData/';
+% im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
+% pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
+% I = imread(im_file);
+% P = load(pc_file, '-mat');
+% P = P.P;
 % end
+
+function [I, P] = getImageData(KinectHandles)
+I = getRGBImage(KinectHandles);
+P = double(getPointCloud(KinectHandles));
+end

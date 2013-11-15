@@ -19,12 +19,12 @@ global w_granularity;
 costmap_res = 0.05;
 costmap_x_res = 3*(1/costmap_res);
 costmap_y_res = 3*(1/costmap_res);
-w_gain = 35;
-obstacle_gain = 100;
+w_gain = 60;
+obstacle_gain = 190;
 v_max = 3.5;
-w_min = -2.5;
-w_max = 2.5;
-w_granularity = 21; 
+w_min = -1.8;
+w_max = 1.8;
+w_granularity = 37; 
 
 w_space = getSampleSpace();
 [idcs, space_dim] = getIndices(w_space);
@@ -32,7 +32,7 @@ w_space = getSampleSpace();
 % figure;
 % h = imagesc(zeros(1));
 while 1
-    rl_spin(10);
+    rl_spin(15);
     msg = sub.getLatestMessage();
     if isempty(msg)
         continue;

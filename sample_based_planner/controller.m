@@ -15,7 +15,7 @@ con = maestro();
 drive_servo = 3;
 steer_servo = 0;
 len = .3;
-servo_out = 195; 
+servo_out = 190; 
 
 v = 0;
 x_pos = 0;
