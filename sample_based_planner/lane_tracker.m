@@ -4,8 +4,8 @@ close all;
 c = rl_init('lane_tracker');
 pub = rl_publish('costmap');
 
-% i = 0;
-KinectHandles = mxNiCreateContext();
+i = 0;
+% KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
 T = dlmread('translation');
@@ -40,8 +40,8 @@ while 1
     
     rl_spin(30);
 
-    [I, P] = getImageData(KinectHandles);
-    % [I, P] = getImageData(i);
+    % [I, P] = getImageData(KinectHandles);
+    [I, P] = getImageData(i);
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
@@ -110,6 +110,58 @@ function [X_, Y_] = biasLane(X, Y)
     P_ = P_';
     X_ = P_(1,:);
     Y_ = P_(2,:) + 10;
+end
+
+function b = refineEst(y, theta)
+i = cos(theta);
+j = sin(theta);
+
+m = j/i;
+b = y - m;
+end
+
+function [y, theta] = getPose(X, Y1, Y2)
+i = (X(2)-X(1));
+j1 = (Y1(2)-Y1(1));
+j2 = (Y2(2)-Y2(1));
+
+r1 = [i j1];
+r2 = [i j2];
+r = r1 + r2;
+
+basis = [1 0];
+r = r/norm(r);
+
+theta = acos(dot(basis, r));
+
+m = r(2)/r(1);
+
+if m > 0 
+    theta = -1 * theta;
+end
+
+[a1 b1] = refit([X' Y1']);
+[a2 b2] = refit([X' Y2']);
+
+r_orth = [-1*r(2) r(1)]; 
+m_orth = r_orth(2)/r_orth(1);
+b_orth = -1*m_orth*X(1);
+intcp = [(b1-b_orth)/(m_orth-a1), ((b1-b_orth)/(m_orth-a1)*m_orth) + b_orth; ...
+        (b2-b_orth)/(m_orth-a2), ((b2-b_orth)/(m_orth-a2)*m_orth) + b_orth];
+
+width = dist(intcp);
+d_bot = dist([X(1), 0; intcp(1, :)]);
+d_top = dist([X(1), 0; intcp(2, :)]);
+
+
+% y = 500 - 1000*(d_top/width);
+y = 500 - d_top*(width/1000);
+
+end
+
+function r = dist(pts)
+    r = sum((pts(2, :) - pts(1, :)).^2);
+    r = r.^(1/2);
 end
 
 % extracts lanes from a region of interest
@@ -229,16 +281,16 @@ K = conv2(K, K');
 K = K/sum(sum(K));
 end
 
-% function [I, P] = getImageData(i)
-% folder = 'Image-10-17/ImageLapData/';
-% im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
-% pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
-% I = imread(im_file);
-% P = load(pc_file, '-mat');
-% P = P.P;
-% end
-
-function [I, P] = getImageData(KinectHandles)
-I = getRGBImage(KinectHandles);
-P = double(getPointCloud(KinectHandles));
+function [I, P] = getImageData(i)
+folder = 'Image-10-17/ImageLapData/';
+im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
+pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
+I = imread(im_file);
+P = load(pc_file, '-mat');
+P = P.P;
 end
+
+% function [I, P] = getImageData(KinectHandles)
+% I = getRGBImage(KinectHandles);
+% P = double(getPointCloud(KinectHandles));
+% end
