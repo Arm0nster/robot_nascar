@@ -21,7 +21,7 @@ len = .3;
 
 v_goal = 1;
 % servo_out = setSpeed(v_goal);
-servo_out = 190; 
+servo_out = 200; 
 
 v = 0;
 x_pos = 0;
@@ -90,8 +90,7 @@ end
 
 %-51.41 to 42.69
 function pos = lookup(angle)
-angle = angle + 90;
-pos = round((angle - 125.5)/(-0.32));
+pos = angle*-4.598 + 113.952;
 if pos > 254
 	pos = 254;
 elseif pos < 0
