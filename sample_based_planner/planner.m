@@ -15,6 +15,7 @@ global v_max;
 global w_min;
 global w_max;
 global w_granularity;
+global origin;
 
 costmap_res = 0.05;
 costmap_x_res = 3*(1/costmap_res);
@@ -25,6 +26,7 @@ v_max = 3.5;
 w_min = -1.8;
 w_max = 1.8;
 w_granularity = 37; 
+origin = .5/costmap_res;
 
 w_space = getSampleSpace();
 [idcs, space_dim] = getIndices(w_space);
@@ -38,6 +40,7 @@ while 1
         continue;
     end
     costmap = msg.data;
+    keyboard;
 
     [control, costmap] = findBestTrajectory(costmap, w_space, idcs, space_dim);
 
@@ -89,6 +92,7 @@ global costmap_x_res;
 global costmap_y_res;
 global w_granularity;
 global v_max;
+global origin;
 
 rads = v_max./w_space';
 R = rads./costmap_res;
@@ -96,8 +100,8 @@ R = rads./costmap_res;
 R_pos = R(find(R > 0));
 R_neg = R(find(R < 0));
 
-tp_pos = arrayfun(@midPointCircle, R_pos, R_pos, 'UniformOutput', false);
-tp_neg = arrayfun(@midPointCircle, abs(R_neg), R_neg, 'UniformOutput', false);
+tp_pos = arrayfun(@midPointCircle, R_pos, origin*ones(size(R_pos)), R_pos, 'UniformOutput', false);
+tp_neg = arrayfun(@midPointCircle, abs(R_neg), origin*ones(size(R_neg)), R_neg, 'UniformOutput', false);
 traj_points = [tp_neg; tp_pos];
 
 traj_points = arrayfun(@flipxy, traj_points, 'UniformOutput', false);
@@ -124,12 +128,13 @@ end
 function [idcs] = filterPoints(traj_points)
 global costmap_x_res;
 global costmap_y_res;
+global origin;
 
 traj_points = cell2mat(traj_points);
 traj_points(:,1) = traj_points(:,1) + floor(costmap_x_res/2);
 
 x_filter = int16((traj_points(:,1) < costmap_x_res) & (traj_points(:,1) > 1));
-y_filter = int16((traj_points(:,2) < costmap_y_res) & (traj_points(:,2) > 1));
+y_filter = int16((traj_points(:,2) < costmap_y_res) & (traj_points(:,2) > origin));
 
 traj_points = traj_points.*[x_filter x_filter];
 traj_points = traj_points.*[y_filter y_filter];
@@ -148,8 +153,8 @@ space = linspace(w_min, w_max, w_granularity);
 end
 
 % finds the indices a circle would occupy in matrix using bresenhams circle algorithm
-function [idcs] = midPointCircle(radius, yc)
-xc = 0;
+function [idcs] = midPointCircle(radius, xc, yc)
+xc = int16(xc);
 yc = int16(yc);
 
 x = int16(0);
