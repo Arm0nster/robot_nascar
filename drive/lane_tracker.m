@@ -124,7 +124,7 @@ end
 
 function [Y, xpnts, ypnts] = pullLanes(data, X, Y)
 
-    xpnts = [X(1)-150 X(1)-150 X(2)+150 X(2)+150];
+    xpnts = [X(1)-250 X(1)-250 X(2)+250 X(2)+250];
     ypnts = [Y(1)+150 Y(1)-150 Y(2)-150 Y(2)+150];
 
     inliers_mask = inpolygon(data(:,1), data(:,2), xpnts, ypnts);
