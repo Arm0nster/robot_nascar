@@ -22,11 +22,11 @@ costmap_x_res = 3*(1/costmap_res);
 costmap_y_res = 3*(1/costmap_res);
 w_gain = 60;
 obstacle_gain = 190;
-v_max = 3.5;
+v_max = 1;
 w_min = -1.8;
 w_max = 1.8;
 w_granularity = 37; 
-origin = .5/costmap_res;
+origin = 0.1/costmap_res;
 
 w_space = getSampleSpace();
 [idcs, space_dim] = getIndices(w_space);
@@ -40,7 +40,6 @@ while 1
         continue;
     end
     costmap = msg.data;
-    keyboard;
 
     [control, costmap] = findBestTrajectory(costmap, w_space, idcs, space_dim);
 
