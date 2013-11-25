@@ -5,7 +5,7 @@ pub = rl_publish('pose');
 
 close all;
 
-i = 50;
+i = 500;
 % KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
@@ -80,7 +80,7 @@ N_bar = mean(N);
 
 if N_bar > turn_thresh
     disp('turning');
-    theta = pi/9;
+    theta = 8*(pi/180);
 else
     theta = 0;
 end
@@ -89,7 +89,11 @@ R = [cos(theta) sin(theta); -sin(theta) cos(theta)];
 P_ = R*[X' Y'];
 P_ = P_';
 X_ = P_(1,:);
-Y_ = P_(2,:) + 10;
+Y_ = P_(2,:);
+
+shift = Y(1) - Y_(1);
+Y_ = Y_ + shift;
+
 end
 
 function p_ = car2world(p, y, theta)
