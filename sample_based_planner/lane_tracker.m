@@ -29,8 +29,8 @@ kern_size = 11;
 gaussianKern = makeGaussian(kern_size);
 
 
-[I, P] = getImageData(KinectHandles);
-% [I, P] = getImageData(i);
+% [I, P] = getImageData(KinectHandles);
+% % [I, P] = getImageData(i);
 % subplot(2, 2, 1), h1 = imagesc(I); axis image;
 % colormap gray;
 % subplot(2, 2, 2), h2 = plot([0], [0], 'r.'); 
@@ -117,7 +117,7 @@ N = hist(obstacles(:,1), 20);
 N_bar = mean(N);
 
 if N_bar > turn_thresh
-    disp('here');
+    disp('turning');
     theta = pi/9;
 else
     theta = 0;
@@ -138,6 +138,7 @@ p_ = p_';
 p_(:,2) = p_(:,2) + y;
 end
 
+% Extract pose from infromation about lanes
 function [y, theta] = getPose(X, Y1, Y2)
 i = (X(2)-X(1));
 j1 = (Y1(2)-Y1(1));
@@ -174,8 +175,6 @@ d_top = dist([X(1), 0; intcp(2, :)]);
 
 y = 500 - d_top*(width/1000);
 y = refineEst(y, theta);
-
-% y = y/1000;
 
 end
 
