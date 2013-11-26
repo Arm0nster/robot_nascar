@@ -21,7 +21,7 @@ len = .3;
 
 v_goal = 1;
 % servo_out = setSpeed(v_goal);
-servo_out = 185; 
+servo_out = 175; 
 
 v = 0;
 x_pos = 0;
@@ -29,16 +29,15 @@ y_pos = 0;
 theta = 0;
 y_diff = 0;
 
-kp = 2.8;
+kp = 2.4;
 kd = 2*sqrt(kp);
-ki = 0;
 
 con.setaccel(drive_servo, 10);
 con.setspeed(drive_servo, 254);
 
-while x_pos < 200 && ~kbhit 
+while x_pos < 300 && ~kbhit 
 
-    rl_spin(10);
+    rl_spin(20);
     msg = sub.getLatestMessage();
     if isempty(msg)
         continue;

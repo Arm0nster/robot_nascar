@@ -23,7 +23,7 @@ x_pos = 0;
 con.setaccel(drive_servo, 10);
 con.setspeed(drive_servo, 254);
 
-while x_pos < 200 && ~kbhit 
+while x_pos < 300 && ~kbhit 
 
     rl_spin(40);
     msg = sub.getLatestMessage();
@@ -45,7 +45,6 @@ while x_pos < 200 && ~kbhit
 
     w = control;
     alpha = atan(len*w/v)*180/pi;
-
     alpha = lookup(alpha);
 
     con.setpos(steer_servo, alpha); 
@@ -70,10 +69,14 @@ end
 
 function pos = lookup(angle)
 pos = angle*-4.598 + 113.952;
-if pos > 254
+if pos < 254 && pos > 0
+    pos = pos;
+elseif pos > 254
 	pos = 254;
 elseif pos < 0
 	pos = 0;
+else
+    pos = 127;
 end
 end
 

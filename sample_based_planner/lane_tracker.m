@@ -111,7 +111,7 @@ end
 
 % hack to bias the region of interest towards the left
 function [X_, Y_, N] = biasLane(X, Y, obstacles)
-turn_thresh = 30;
+turn_thresh = 25;
 
 N = hist(obstacles(:,1), 20); 
 N_bar = mean(N);

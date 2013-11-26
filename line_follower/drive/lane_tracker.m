@@ -5,8 +5,8 @@ pub = rl_publish('pose');
 
 close all;
 
-i = 500;
-% KinectHandles = mxNiCreateContext();
+% i = 500;
+KinectHandles = mxNiCreateContext();
 
 R = dlmread('rotation');
 T = dlmread('translation');
@@ -21,21 +21,21 @@ global count;
 count = 0;
 
 % [I, P] = getImageData(KinectHandles);
-[I, P] = getImageData(i);
-subplot(2, 2, 1), h1 = imagesc(I); axis image;
-colormap gray;
-subplot(2, 2, 2), h2 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
-hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
-axis([0 3, -1.5 1.5]);
-subplot(2, 2, 4), h4 = plot(X, Y1, 'b.'); hold on; plot(X, Y2, 'b.');
-axis([0 3000, -1500 1500]);
+% % [I, P] = getImageData(i);
+% subplot(2, 2, 1), h1 = imagesc(I); axis image;
+% colormap gray;
+% subplot(2, 2, 2), h2 = quiver(0, 1, 0, 5, 'r', 'LineWidth', 2); 
+% hold on; plot([0 3], [.5 .5]); plot([0 3], [-.5 -.5]);
+% axis([0 3, -1.5 1.5]);
+% subplot(2, 2, 4), h4 = plot(X, Y1, 'b.'); hold on; plot(X, Y2, 'b.');
+% axis([0 3000, -1500 1500]);
 
 while 1
 
     rl_spin(30);
 
-    % [I, P] = getImageData(KinectHandles);
-    [I, P] = getImageData(i);
+    [I, P] = getImageData(KinectHandles);
+    % [I, P] = getImageData(i);
     I = getBWImage(I);
     p_ = transform(R, T, I, P);
 
@@ -58,22 +58,22 @@ while 1
     car_x = .2;
     car_y = car_x*tan(theta);
 
-    i = i + 1;
-    set(h1, 'CDATA', I);
-    colormap gray;
-    set(h2, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
-    axis([0 3, -1.5 1.5]);
-    set(h4, 'XDATA', obstacles(:,1), 'YDATA', obstacles(:,2)); cla(h4);
-    plot(X, Y1); hold on; plot(X, Y2); axis equal;
-    axis([0 3000, -1500 1500]); 
-    drawnow;
+    % i = i + 1;
+    % set(h1, 'CDATA', I);
+    % colormap gray;
+    % set(h2, 'XDATA', 1, 'YDATA', y, 'VDATA', car_y, 'UDATA', car_x); 
+    % axis([0 3, -1.5 1.5]);
+    % set(h4, 'XDATA', obstacles(:,1), 'YDATA', obstacles(:,2)); cla(h4);
+    % plot(X, Y1); hold on; plot(X, Y2); axis equal;
+    % axis([0 3000, -1500 1500]); 
+    % drawnow;
 end
 
 end
 
 % hack to bias the region of interest towards the left
 function [X_, Y_, N] = biasLane(X, Y, obstacles)
-turn_thresh = 30;
+turn_thresh = 25;
 
 N = hist(obstacles(:,1), 20); 
 N_bar = mean(N);
@@ -261,19 +261,19 @@ bw(120:end, :) = 0;
 bw(1:50, :) = 0;
 end
 
-function [I, P] = getImageData(i)
-folder = 'Image-10-17/ImageLapData/';
-im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
-pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
-I = imread(im_file);
-P = load(pc_file, '-mat');
-P = P.P;
-end
-
-% function [I, P] = getImageData(KinectHandles)
-% I = getRGBImage(KinectHandles);
-% P = double(getPointCloud(KinectHandles));
+% function [I, P] = getImageData(i)
+% folder = 'Image-10-17/ImageLapData/';
+% im_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.png');
+% pc_file = strcat('/home/armon/Documents/robot_nascar/data/',folder,'i', num2str(i), '+1i.mat');
+% I = imread(im_file);
+% P = load(pc_file, '-mat');
+% P = P.P;
 % end
+
+function [I, P] = getImageData(KinectHandles)
+I = getRGBImage(KinectHandles);
+P = double(getPointCloud(KinectHandles));
+end
 
 function logger(I, P);
 global count;
